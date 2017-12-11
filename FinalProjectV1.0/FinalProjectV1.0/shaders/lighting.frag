@@ -5,7 +5,7 @@ in vec3 FragPos;
 
 uniform vec3 objectColor;
 uniform vec3 lightColor;
-uniform vec3 lightPos;//光源的位置
+uniform vec3 lightPos;
 uniform vec3 viewPos;//视点的位置
 
 void main()

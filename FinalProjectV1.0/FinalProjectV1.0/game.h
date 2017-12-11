@@ -1,9 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
+#include <iostream>
+#include <cmath>
 
 #include <GL/glew.h>
 #include <GL/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+#include "Camera.h"
 
 // Represents the current state of the game
 enum GameState {
@@ -22,6 +28,7 @@ public:
 	GameState              State;
 	GLboolean              Keys[1024];
 	GLuint                 Width, Height;
+	Camera camera;
 	// Constructor/Destructor
 	Game(GLuint width, GLuint height);
 	~Game();
@@ -29,8 +36,12 @@ public:
 	void Init();
 	// GameLoop
 	void ProcessInput(GLfloat dt);
-	void Update(GLfloat dt);
-	void Render();
+	void Update(GLfloat dt);//运动逻辑
+	void Render();//渲染游戏场景
+
+	// Not general !!!
+	// Light attributes
+	glm::vec3 lightPos;
 };
 
 #endif
