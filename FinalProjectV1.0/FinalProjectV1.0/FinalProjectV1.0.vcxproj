@@ -19,15 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="box.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="lightBox.h" />
     <ClInclude Include="NaiveShader.h" />
     <ClInclude Include="resource_manager.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="box.cpp" />
     <ClCompile Include="game.cpp" />
+    <ClCompile Include="lightBox.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="resource_manager.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -95,7 +99,7 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;glew32.lib;OPENGL32.lib;GLAUX.lib;glu.lib;GLU32.lib;glui32.lib;glut.lib;glut32.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;OPENGL32.lib;GLAUX.lib;glu.lib;GLU32.lib;glui32.lib;glut.lib;glut32.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

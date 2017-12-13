@@ -10,6 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Camera.h"
+#include "box.h"
+#include "lightBox.h"
 
 // Represents the current state of the game
 enum GameState {
@@ -42,6 +44,8 @@ public:
 	// Not general !!!
 	// Light attributes
 	glm::vec3 lightPos;
+	Box box;
+	LightBox lightBox;
 };
 
 #endif

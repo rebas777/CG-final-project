@@ -36,6 +36,12 @@
     <ClInclude Include="resource_manager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="box.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lightBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="源.cpp">
@@ -54,6 +60,12 @@
       <Filter>源文件\util</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="box.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lightBox.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
