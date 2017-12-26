@@ -3,8 +3,14 @@
 ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height)
 	: shader(shader), texture(texture), amount(amount), Width(width), Height(height)
 {
-	emitPos = glm::vec3(1.2f, -1.0f, 2.0f);
 	this->init();
+	this->newParticleCounter = 0;
+}
+
+void ParticleGenerator::SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3) {
+	emitPoses.push_back(emitPos1);
+	emitPoses.push_back(emitPos2);
+	emitPoses.push_back(emitPos3);
 }
 
 void ParticleGenerator::init()
@@ -71,22 +77,55 @@ void ParticleGenerator::init()
 		this->particles.push_back(Particle());
 }
 
-void ParticleGenerator::Update(GLfloat dt, GLuint newParticles, glm::vec3 dstPos)
+void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos)
 {
-	// Add new particles 
-	for (GLuint i = 0; i < newParticles; ++i)
-	{
-		int unusedParticle = this->firstUnusedParticle();
-		this->respawnParticle(this->particles[unusedParticle]);
+	dt /= 6;
+	newParticleCounter += newParticles;
+	if (newParticleCounter >= 1) {
+		// Add new particles 
+		for (GLuint i = 0; i < newParticleCounter; ++i)
+		{
+			int unusedParticle = this->firstUnusedParticle();
+			this->respawnParticle(this->particles[unusedParticle]);
+		}
 	}
+	newParticleCounter -= (int)newParticleCounter;
 	// Update all particles
 	for (GLuint i = 0; i < this->amount; ++i)
 	{
 		Particle &p = this->particles[i];
-		p.Life -= dt; // reduce life
+		// reduce life
+		p.Life -= dt; 
 		if (p.Life > 0.0f)
 		{	// particle is alive, thus update
-			p.Position -= p.Velocity * dt;
+
+			// if need, change the accelerate
+			p.VelocityChangeCounter++;
+			if (p.VelocityChangeCounter > 100) {
+				float randX = (rand() % 100 - 50) / 5.0f;
+				float randY = (rand() % 100 - 50) / 5.0f;
+				float randZ = (rand() % 100 - 50) / 5.0f;
+				p.Accelerate = { randX, randY, randZ };
+				p.VelocityChangeCounter = 0;
+			}
+
+			// calculate distance between current particle and chasing point
+			float distance = sqrt((dstPos[0] - p.Position[0])*(dstPos[0] - p.Position[0])
+				+ (dstPos[1] - p.Position[1]) *  (dstPos[1] - p.Position[1])
+				+ (dstPos[2] - p.Position[2]) * (dstPos[2] - p.Position[2]));
+
+			p.randVelocity += p.Accelerate * dt;
+			if (distance <= 1.5) { // When the particle is close enough to the attraction  这里的 2.5 代表吸引区大小（密集程度）
+				p.Velocity  = p.randVelocity;
+			}else{
+				float constraintVal = rand() % 40 + 3; // 对每个个体随机约束程度
+				glm::vec3 V_center = constraintVal*(dstPos - p.Position) / distance;
+				p.Velocity = p.randVelocity + V_center;
+			}
+			// calculate V_center
+			//float distanceParam = 0.0001 * distance;   //线性正相关
+			//float distanceParam = exp(3-distance);  //指数负相关
+			p.Position += p.Velocity * dt;
 			//TODO: use sin function to disturb color and light
 
 		}
@@ -95,17 +134,20 @@ void ParticleGenerator::Update(GLfloat dt, GLuint newParticles, glm::vec3 dstPos
 
 void ParticleGenerator::respawnParticle(Particle &particle)
 {
-	GLfloat random1 = ((rand() % 100) - 50) / 10.0f; // [-5, 5]
-	GLfloat random2 = ((rand() % 100) - 50) / 10.0f;
-	GLfloat random3 = ((rand() % 100) - 50) / 10.0f;
+	GLfloat random1 = ((rand() % 100) - 50) / 100.0f; // [-5, 5]
+	GLfloat random2 = ((rand() % 100) - 50) / 100.0f;
+	GLfloat random3 = ((rand() % 100) - 50) / 100.0f;
 	GLfloat rColor = 0.5 + ((rand() % 100) / 100.0f);
-	particle.Position = emitPos;  // 后期引入初始位置的扰动
+	glm::vec3 initPosDisturb = glm::vec3(random3*5, random2*5, random1*5);
+	particle.Position = emitPoses[rand()%3] + initPosDisturb;  // 位置扰动
 	particle.Color = glm::vec4(rColor, rColor, rColor, 1.0f);
-	particle.Life = 5.0f;
-	//TODO: 随机数产生小比例 prime
+	particle.Life = 50.0f;
 	particle.is_prime = false;
 	particle.mode = 0;
 	particle.Velocity = glm::vec3(random1, random2, random3);
+	particle.VelocityChangeCounter = 0;
+	particle.Accelerate = glm::vec3(0.0f);
+	particle.randVelocity = glm::vec3(0.0f);
 }
 
 // Stores the index of the last particle used (for quick access to next dead particle)

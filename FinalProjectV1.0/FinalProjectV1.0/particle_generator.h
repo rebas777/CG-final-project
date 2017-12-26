@@ -10,12 +10,13 @@
 
 // Represents a single particle and its state
 struct Particle {
-	glm::vec3 Position, Velocity;
+	glm::vec3 Position, Velocity, Accelerate, randVelocity;
 	glm::vec4 Color;
 	GLfloat Life;
+	GLfloat VelocityChangeCounter; // When the counter is done, change accelerate.
 	bool is_prime; // Prime ones are larger in size and self-luminous.
 	int mode; // 0 -- firefly, 1 -- star, 2 -- snow
-	Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(0.0f), is_prime(false), mode(0) {}
+	Particle() : Position(0.0f), Velocity(0.0f), Accelerate(0.0f), randVelocity(0.0f), Color(1.0f), Life(0.0f), is_prime(false), mode(0) {}
 };
 
 class ParticleGenerator {
@@ -23,9 +24,11 @@ public:
 
 	ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height);
 
-	void Update(GLfloat dt, GLuint newParticles, glm::vec3 dstPos);
+	void Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos);
 
 	void Draw(Camera &camera);
+
+	void SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3);
 
 private:
 	// State
@@ -36,7 +39,8 @@ private:
 	Texture2D texture;
 	GLuint VBO, VAO;
 	GLuint Width, Height;
-	glm::vec3 emitPos;
+	std::vector<glm::vec3> emitPoses;
+	GLfloat newParticleCounter;
 
 	// Initializes buffer and vertex attributes
 	void init();

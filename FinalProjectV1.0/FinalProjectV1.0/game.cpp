@@ -27,13 +27,19 @@ void Game::Init()
 	Shader tmp1 = ResourceManager::GetShader("lampShader");
 	Texture2D nullTexture;
 	particleSys = new ParticleGenerator(tmp1, nullTexture, 500, Width, Height);
+	glm::vec3 emitPos1, emitPos2, emitPos3;
+	emitPos1 = glm::vec3(0.0f, 0.0f, 4.0f);
+	emitPos2 = glm::vec3(1.2f, 1.0f, 2.0f);
+	emitPos3 = glm::vec3(-5.0f, -1.0f, 2.0f);
+	particleSys->SetEmitPos(emitPos1, emitPos2, emitPos3);
 }
 
 void Game::Update(GLfloat dt)
 {
 	box.Update();
 	lightBox.Update();
-	particleSys->Update(dt, 2, camera.Position);
+	particleSys->Update(dt, 0.002, camera.Position);
+	//particleSys->Update(dt, 0.002, glm::vec3(0.0f, 0.0f, 15.0f));
 }
 
 
