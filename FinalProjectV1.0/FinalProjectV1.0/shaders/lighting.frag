@@ -7,12 +7,15 @@ uniform vec3 objectColor;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
 uniform vec3 viewPos;//视点的位置
+uniform vec3 globalAmbientColor;
 
 void main()
 {
   //1. ambient light
   float ambientStrength = 0.1f;
   vec3 ambient = ambientStrength * lightColor;
+  float globalAmbientStrength = 0.3f;
+  ambient = ambient + globalAmbientStrength * globalAmbientColor;
 
   //2. diffuse light
   vec3 norm = normalize(Normal);

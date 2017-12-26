@@ -74,7 +74,7 @@ void LightBox::Draw(Shader &shader, Camera &camera) {
 	glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, lightPos);
-	model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+	model = glm::scale(model, glm::vec3(0.02f)); // Make it a smaller cube
 	shader.Use();
 	shader.SetMatrix4("view", view);
 	shader.SetMatrix4("projection", projection);

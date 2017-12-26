@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "box.h"
 #include "lightBox.h"
+#include "particle_generator.h"
 
 // Represents the current state of the game
 enum GameState {
@@ -31,6 +32,7 @@ public:
 	GLboolean              Keys[1024];
 	GLuint                 Width, Height;
 	Camera camera;
+	ParticleGenerator *particleSys;
 	// Constructor/Destructor
 	Game(GLuint width, GLuint height);
 	~Game();

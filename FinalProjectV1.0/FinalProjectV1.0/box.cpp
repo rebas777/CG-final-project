@@ -75,7 +75,8 @@ void Box::Update() {
 void Box::Draw(Shader &shader, Camera &camera) {
 	shader.Use();
 	shader.SetVector3f("objectColor", 1.0f, 0.5f, 0.31f);
-	shader.SetVector3f("lightColor", 1.0f, 1.0f, 1.0f);
+	shader.SetVector3f("lightColor", 0.0f, 1.0f, 0.0f);
+	shader.SetVector3f("globalAmbientColor", 1.0f, 1.0f, 1.0f);
 	shader.SetVector3f("lightPos", lightPos);
 	shader.SetVector3f("viewPos", camera.Position);
 

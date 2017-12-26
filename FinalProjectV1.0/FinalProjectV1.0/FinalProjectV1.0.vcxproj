@@ -24,6 +24,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="lightBox.h" />
     <ClInclude Include="NaiveShader.h" />
+    <ClInclude Include="particle_generator.h" />
     <ClInclude Include="resource_manager.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="texture.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="lightBox.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="particle_generator.cpp" />
     <ClCompile Include="resource_manager.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="texture.cpp" />
