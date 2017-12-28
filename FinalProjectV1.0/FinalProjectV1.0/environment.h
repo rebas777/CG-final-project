@@ -19,11 +19,13 @@ public:
 	void Update();
 
 private:
-	GLuint VBO, containerVAO;
+	Shader skyboxShader;
+	GLuint VBO, containerVAO, skyboxVAO;
 	GLuint Width, Height;
 	ParticleGenerator *particleSys;
 	// environment 从 particleSystem 读取光源数目和各个光源的位置
 	
 	Model *envModel;
+	GLuint cubemapTexture;
 
 };

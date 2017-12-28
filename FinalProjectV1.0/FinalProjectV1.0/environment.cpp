@@ -1,10 +1,82 @@
 #include "environment.h"
 
+GLuint loadCubemap(vector<const GLchar*> faces);
+
 void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps) {
 	Width = width;
 	Height = height;
 	envModel = new Model("models/land.obj");
 	particleSys = ps;  // need to initialize the particle system before initialize evironment !!!
+
+	// Initialize skybox
+	GLfloat skyboxVertices[] = {
+		// Positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f
+	};
+
+	// Setup skybox VAO
+	GLuint skyboxVBO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glBindVertexArray(0);
+
+	// Cubemap (Skybox)
+	vector<const GLchar*> faces;
+	faces.push_back("skyboxes/skybox1/rt.jpg");
+	faces.push_back("skyboxes/skybox1/lf.jpg");
+	faces.push_back("skyboxes/skybox1/up.jpg");
+	faces.push_back("skyboxes/skybox1/dn.jpg");
+	faces.push_back("skyboxes/skybox1/bk.jpg");
+	faces.push_back("skyboxes/skybox1/ft.jpg");
+	cubemapTexture = loadCubemap(faces);
+
+	ResourceManager::LoadShader("shaders/skybox.vs", "shaders/skybox.frag", nullptr, "skyboxShader");
+	skyboxShader = ResourceManager::GetShader("skyboxShader");
 }
 
 void Environment::Update() {
@@ -12,6 +84,22 @@ void Environment::Update() {
 }
 
 void Environment::Draw(Shader &shader, Camera &camera) {
+
+	// Draw skybox
+	glDepthMask(GL_FALSE);
+	skyboxShader.Use();
+	glm::mat4 view_skybox = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+	glm::mat4 projection_skybox = glm::perspective(camera.Zoom, (float)Width / (float)Height, 0.1f, 100.0f);
+	skyboxShader.SetMatrix4("view", view_skybox);
+	skyboxShader.SetMatrix4("projection", projection_skybox);
+	// skybox cube
+	glBindVertexArray(skyboxVAO);
+	glActiveTexture(GL_TEXTURE0);
+	skyboxShader.SetInteger("skybox", 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	glDepthMask(GL_TRUE);
 
 	int liveNum = particleSys->GetLiveNum();
 	int nLights = min(100, liveNum); // maximum of lights: 100
@@ -52,4 +140,40 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetMatrix4("model", model);
 
 	envModel->Draw(shader);
+
+	
+
+}
+
+// Loads a cubemap texture from 6 individual texture faces
+// Order should be:
+// +X (right)
+// -X (left)
+// +Y (top)
+// -Y (bottom)
+// +Z (front) 
+// -Z (back)
+GLuint loadCubemap(vector<const GLchar*> faces)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height;
+	unsigned char* image;
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	for (GLuint i = 0; i < faces.size(); i++)
+	{
+		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		SOIL_free_image_data(image);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	return textureID;
 }

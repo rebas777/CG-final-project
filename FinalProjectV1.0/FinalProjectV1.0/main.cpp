@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 	// OpenGL configuration
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 	// Initialize game
 	MyGame.Init();

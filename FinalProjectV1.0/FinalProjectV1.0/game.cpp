@@ -60,10 +60,10 @@ void Game::Render()
 	//Shader tmp1 = ResourceManager::GetShader("lampShader");
 	//lightBox.Draw(tmp1, camera);
 
-	// Draw the particle system
-	particleSys->Draw(camera);
-
-	// Draw the invironment
+	// Draw the environment
 	Shader tmp2 = ResourceManager::GetShader("environmentShader");
 	environment.Draw(tmp2, camera);
+
+	// Draw the particle system
+	particleSys->Draw(camera);
 }
