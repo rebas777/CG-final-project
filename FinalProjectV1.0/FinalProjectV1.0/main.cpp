@@ -1,6 +1,8 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/glfw3.h>
+#include <iostream>
+#include <irrKlang/irrKlang.h>
 
 #include "Camera.h"
 #include "game.h"
@@ -29,6 +31,17 @@ Game MyGame(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 int main(int argc, char *argv[])
 {
+
+	// try to play music
+	// start the sound engine with default parameters
+	irrklang::ISoundEngine* engine = irrklang::createIrrKlangDevice();
+
+	if (!engine)
+		return 0; // error starting up the engine
+
+	engine->play2D("sounds/LullabyOfWoe.wav", true);
+
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
