@@ -18,26 +18,31 @@ void Game::Init()
 	// Load shaders
 	ResourceManager::LoadShader("shaders/lamp.vs", "shaders/lamp.frag", nullptr, "lampShader");
 	ResourceManager::LoadShader("shaders/lighting.vs", "shaders/lighting.frag", nullptr, "lightingShader");
+	ResourceManager::LoadShader("shaders/environment.vs", "shaders/environment.frag", nullptr, "environmentShader");
 
 	// Initialize game objects
     box.Init(Width, Height);
 	lightBox.Init(Width, Height);
+	//tmpModel = new Model("models/car/Avent.obj");
 
 	// Initialize particle generator
 	Shader tmp1 = ResourceManager::GetShader("lampShader");
 	Texture2D nullTexture;
-	particleSys = new ParticleGenerator(tmp1, nullTexture, 500, Width, Height);
+	particleSys = new ParticleGenerator(tmp1, nullTexture, 100, Width, Height);
 	glm::vec3 emitPos1, emitPos2, emitPos3;
-	emitPos1 = glm::vec3(0.0f, 0.0f, 4.0f);
-	emitPos2 = glm::vec3(1.2f, 1.0f, 2.0f);
-	emitPos3 = glm::vec3(-5.0f, -1.0f, 2.0f);
+	emitPos1 = glm::vec3(0.0f, 0.0f, 40.0f); // 三个方向各有一个发射点
+	emitPos2 = glm::vec3(30.0f, 1.0f, 2.0f);
+	emitPos3 = glm::vec3(-20.0f, -1.0f, 2.0f);
 	particleSys->SetEmitPos(emitPos1, emitPos2, emitPos3);
+
+	// Initialize  environment
+	environment.Init(Width, Height, particleSys);
 }
 
 void Game::Update(GLfloat dt)
 {
-	box.Update();
-	lightBox.Update();
+	//box.Update(camera.Position, particleSys->GetLiveNum());
+	//lightBox.Update();
 	particleSys->Update(dt, 0.002, camera.Position);
 	//particleSys->Update(dt, 0.002, glm::vec3(0.0f, 0.0f, 15.0f));
 }
@@ -50,9 +55,15 @@ void Game::ProcessInput(GLfloat dt)
 
 void Game::Render()
 {
-	Shader tmp = ResourceManager::GetShader("lightingShader");
-	box.Draw(tmp, camera);
-	Shader tmp1 = ResourceManager::GetShader("lampShader");
-	lightBox.Draw(tmp1, camera);
+	//Shader tmp = ResourceManager::GetShader("lightingShader");
+	//box.Draw(tmp, camera);
+	//Shader tmp1 = ResourceManager::GetShader("lampShader");
+	//lightBox.Draw(tmp1, camera);
+
+	// Draw the particle system
 	particleSys->Draw(camera);
+
+	// Draw the invironment
+	Shader tmp2 = ResourceManager::GetShader("environmentShader");
+	environment.Draw(tmp2, camera);
 }

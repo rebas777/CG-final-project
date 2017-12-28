@@ -2,6 +2,17 @@
 #define TEXTURE_H
 
 #include <GL/glew.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+// Std. Includes
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <vector>
+using namespace std;
 
 // Texture2D is able to store and configure a texture in OpenGL.
 // It also hosts utility functions for easy management.
@@ -26,6 +37,14 @@ public:
 	void Generate(GLuint width, GLuint height, unsigned char* data);
 	// Binds the texture as the current active GL_TEXTURE_2D texture object
 	void Bind() const;
+
+
+
+	string type;  // 原 Mesh.h 中结构体 Texture 的属性，移植过来的。在与 Assimp 交互的 Model 类中可能会用到
+	aiString path;
+
+
+
 };
 
 #endif

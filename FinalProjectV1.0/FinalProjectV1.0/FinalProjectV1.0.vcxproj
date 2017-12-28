@@ -21,8 +21,11 @@
   <ItemGroup>
     <ClInclude Include="box.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="environment.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="lightBox.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="model.h" />
     <ClInclude Include="NaiveShader.h" />
     <ClInclude Include="particle_generator.h" />
     <ClInclude Include="resource_manager.h" />
@@ -31,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="box.cpp" />
+    <ClCompile Include="environment.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="lightBox.cpp" />
     <ClCompile Include="main.cpp" />
@@ -99,9 +103,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;OPENGL32.lib;GLAUX.lib;glu.lib;GLU32.lib;glui32.lib;glut.lib;glut32.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;OPENGL32.lib;GLAUX.lib;glu.lib;GLU32.lib;glui32.lib;glut.lib;glut32.lib;SOIL.lib;assimp.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

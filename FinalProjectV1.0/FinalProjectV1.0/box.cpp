@@ -66,19 +66,30 @@ void Box::Init(GLuint width, GLuint height)
 	glBindVertexArray(0);
 }
 
-void Box::Update() {
+void Box::Update(glm::vec3 lightPosition, GLuint lights) {
 	//让光源运动
 	lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
 	lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+	//lightPos = lightPosition;
+	this->lightNum = lights;
 }
 
 void Box::Draw(Shader &shader, Camera &camera) {
 	shader.Use();
 	shader.SetVector3f("objectColor", 1.0f, 0.5f, 0.31f);
-	shader.SetVector3f("lightColor", 0.0f, 1.0f, 0.0f);
-	shader.SetVector3f("globalAmbientColor", 1.0f, 1.0f, 1.0f);
-	shader.SetVector3f("lightPos", lightPos);
+	shader.SetVector3f("lightPos[0]", camera.Position);
+	shader.SetVector3f("lightPos[1]", lightPos);
 	shader.SetVector3f("viewPos", camera.Position);
+	// update lightStrength according to numbers of live particles
+	//float ambientStrength = (0.4 / 500)*(1249 + lightNum);
+	//float diffStrength = (0.4 / 500)*(1249 + lightNum) + 0.5;
+	//float specularStrength = (0.4 / 500)*(1249 + lightNum) + 0.4;
+	shader.SetFloat("lightProperty.constant", 1.0f);
+	shader.SetFloat("lightProperty.linear", 0.009);
+	shader.SetFloat("lightProperty.quadratic", 0.0032);
+	shader.SetVector3f("lightProperty.ambient", 0.2f, 0.2f, 0.2f);
+	shader.SetVector3f("lightProperty.diffuse", 1.0f, 1.0f, 1.0f);
+	shader.SetVector3f("lightProperty.specular", 1.0f, 1.0f, 1.0f);
 
 	// Create camera transformations
 	glm::mat4 view(1.0f);

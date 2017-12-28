@@ -87,6 +87,12 @@ void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPo
 		{
 			int unusedParticle = this->firstUnusedParticle();
 			this->respawnParticle(this->particles[unusedParticle]);
+			if (liveAmount < amount) {
+				liveAmount++;
+			}
+			char tmp[100];
+			sprintf(tmp, "liveAmount: %d", liveAmount);
+			//std::cout << tmp << endl;
 		}
 	}
 	newParticleCounter -= (int)newParticleCounter;
@@ -127,7 +133,12 @@ void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPo
 			//float distanceParam = exp(3-distance);  //指数负相关
 			p.Position += p.Velocity * dt;
 			//TODO: use sin function to disturb color and light
-
+			if (p.Life < dt) {  // The particle nearly dead (will died in next frame)
+				this->liveAmount--;
+				char tmp[100];
+				sprintf(tmp, "liveAmount: %d", liveAmount);
+				//std::cout << tmp << endl;
+			}
 		}
 	}
 }
@@ -191,6 +202,23 @@ void ParticleGenerator::Draw(Camera &camera) {
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 			glBindVertexArray(0);
+		}
+	}
+}
+
+
+GLuint ParticleGenerator::GetLiveNum() {
+	return this->liveAmount;
+}
+
+glm::vec3 ParticleGenerator::getIthLivePos(int i) {
+	int j = 0;
+	for (Particle particle : this->particles) {
+		if (particle.Life > 0.0f) {
+			if (j == i) {
+				return particle.Position;
+			}
+			j++;
 		}
 	}
 }

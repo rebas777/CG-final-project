@@ -13,10 +13,11 @@ public:
 	Box() {};
 	void Init(GLuint width, GLuint height);
 	void  Draw(Shader &shader, Camera &camera);
-	void Update();
+	void Update(glm::vec3 lightPosition, GLuint lights);
 
 private:
 	glm::vec3 lightPos;
 	GLuint VBO, containerVAO;
 	GLuint Width, Height;
+	GLuint lightNum;
 };

@@ -13,6 +13,8 @@
 #include "box.h"
 #include "lightBox.h"
 #include "particle_generator.h"
+#include "model.h"
+#include "environment.h"
 
 // Represents the current state of the game
 enum GameState {
@@ -48,6 +50,10 @@ public:
 	glm::vec3 lightPos;
 	Box box;
 	LightBox lightBox;
+	Environment environment;
+	
+
+	//Model *tmpModel;
 };
 
 #endif

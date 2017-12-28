@@ -22,6 +22,8 @@ struct Particle {
 class ParticleGenerator {
 public:
 
+	std::vector<Particle> particles;
+
 	ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height);
 
 	void Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos);
@@ -30,10 +32,15 @@ public:
 
 	void SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3);
 
+	GLuint GetLiveNum();
+
+	glm::vec3 getIthLivePos(int i);
+
 private:
 	// State
-	std::vector<Particle> particles;
+	
 	GLuint amount;
+	GLuint liveAmount;
 	// Render state
 	Shader shader;
 	Texture2D texture;
