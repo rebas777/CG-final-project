@@ -101,8 +101,8 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	glBindVertexArray(0);
 	glDepthMask(GL_TRUE);
 
-	int liveNum = particleSys->GetLiveNum();
-	int nLights = min(100, liveNum); // maximum of lights: 100
+	//int liveNum = particleSys->GetLiveNum();
+	//int nLights = min(100, liveNum); // maximum of lights: 100
 	shader.Use();
 	shader.SetVector3f("objectColor", 1.0f, 1.0f, 1.0f);
 	shader.SetVector3f("viewPos", camera.Position);
@@ -113,11 +113,9 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetVector3f("globalAmbient", 0.06f, 0.06f, 0.06f); // 调参项：全局环境光，营造气氛
 	shader.SetVector3f("lightProperty.diffuse", 219.0 / 255, 1.0f, 47.0 / 255);
 	shader.SetVector3f("lightProperty.specular", 130.0 / 255, 1.0f, 47.0 / 255);
-	shader.SetInteger("activeLightNum", nLights);
 	
-
 	
-	int i = 0, j = 0;
+	/*int i = 0, j = 0;
 	while (j < nLights) {
 		if (particleSys->particles[i].Life > 0) {
 			char str[15];
@@ -126,7 +124,32 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 			j++;
 		}
 		i++;
+	}*/
+
+	int j = 0, nCenter = 0; // nCenter means how many individials is close enough to the attraction
+	for (Particle particle : particleSys->particles) {
+		if (particle.Life > 0) {
+			if (particle.distance > 4.0) { // particle is far and alone, treated as an individial light.
+				char str[15];
+				sprintf(str, "lightPos[%d]", j);
+				shader.SetVector3f(str, particle.Position);
+				j++;
+			}
+			else { // Particle is near to the attraction, treated as a contributor of  the whole light.
+				nCenter++;
+			}
+		}
 	}
+
+	shader.SetInteger("activeLightNum", j);
+	shader.SetInteger("centerNum", nCenter);
+	shader.SetVector3f("centerLightPos", camera.Position);
+	shader.SetFloat("centerLightProperty.constant", 3.5f);
+	shader.SetFloat("centerLightProperty.linear", 1.0f);
+	shader.SetFloat("centerLightProperty.quadratic", 0.78);
+	shader.SetVector3f("centerLightProperty.ambient", 0.000002f * nCenter, 0.000002f* nCenter, 0.000002f* nCenter); // 调参项： 一只萤火虫的光能对环境光有多大影响？
+	shader.SetVector3f("centerLightProperty.diffuse", 219.0 / 255 * nCenter/2, 1.0f* nCenter/2, 47.0 / 255 * nCenter/2);
+	shader.SetVector3f("centerLightProperty.specular", 130.0 / 255 * nCenter/3, 1.0f* nCenter/3, 47.0 / 255 * nCenter/3);
 
 	glm::mat4 view(1.0f);
 	glm::mat4 projection = glm::perspective(camera.Zoom, (float)Width / (float)Height, 0.1f, 100.0f);

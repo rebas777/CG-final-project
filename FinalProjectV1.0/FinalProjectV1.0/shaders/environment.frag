@@ -26,16 +26,15 @@ in vec3 FragPos;
 in vec2 TexCoords;
 
 uniform vec3 objectColor;
-/*
- 动态多光源的处理：
-     shader 最多支持50个光源的渲染，少于50个则由 activeLightNum 规约。
-*/
 uniform vec3 lightPos[100];
 uniform int activeLightNum;
 uniform vec3 viewPos;//视点的位置
 uniform LightProperty lightProperty;
+uniform LightProperty centerLightProperty;
 uniform Material material;
 uniform vec3 globalAmbient;
+uniform vec3 centerLightPos;
+uniform int centerNum;
 
 vec3 CalcPointLight(LightProperty lightProperty, vec3 lightPos,  Material mat, vec3 normal, vec3 fragPos, vec3 viewDir);
 
@@ -49,7 +48,7 @@ void main()
   for(int i = 0; i < activeLightNum; i++)
       result += CalcPointLight(lightProperty, lightPos[i], material, norm, FragPos, viewDir);
 
-  //result = CalcPointLight(lightProperty, lightPosition, material, norm, FragPos, viewDir)*objectColor;
+  result += CalcPointLight(centerLightProperty, centerLightPos, material, norm, FragPos, viewDir);
   result += globalAmbient;
       
   color = vec4(result*objectColor, 1.0f);

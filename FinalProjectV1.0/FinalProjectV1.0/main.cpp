@@ -1,7 +1,6 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/glfw3.h>
-#include <iostream>
 #include <irrKlang/irrKlang.h>
 
 #include "Camera.h"

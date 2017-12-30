@@ -75,6 +75,7 @@ void ParticleGenerator::init()
 	// Create this->amount default particle instances
 	for (GLuint i = 0; i < this->amount; ++i)
 		this->particles.push_back(Particle());
+
 }
 
 void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos)
@@ -120,6 +121,8 @@ void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPo
 				+ (dstPos[1] - p.Position[1]) *  (dstPos[1] - p.Position[1])
 				+ (dstPos[2] - p.Position[2]) * (dstPos[2] - p.Position[2]));
 
+			p.distance = distance;
+
 			p.randVelocity += p.Accelerate * dt;
 			if (distance <= 1.5) { // When the particle is close enough to the attraction  这里的 2.5 代表吸引区大小（密集程度）
 				p.Velocity  = p.randVelocity;
@@ -159,6 +162,12 @@ void ParticleGenerator::respawnParticle(Particle &particle)
 	particle.VelocityChangeCounter = 0;
 	particle.Accelerate = glm::vec3(0.0f);
 	particle.randVelocity = glm::vec3(0.0f);
+
+	// Set up sound engin
+	particle.soundEngine = irrklang::createIrrKlangDevice();
+	particle.music = particle.soundEngine->play3D("sounds/insect.wav", irrklang::vec3df(0, 0, 0), true, false, true);
+	if (particle.music)
+		particle.music->setMinDistance(0.5f);
 }
 
 // Stores the index of the last particle used (for quick access to next dead particle)
@@ -184,7 +193,13 @@ GLuint ParticleGenerator::firstUnusedParticle()
 	return 0;
 }
 
+inline irrklang::vec3df posFormatTrans(glm::vec3 src) {
+	irrklang::vec3df dst(src[0], src[1], src[2]);
+	return dst;
+}
+
 void ParticleGenerator::Draw(Camera &camera) {
+
 	glm::mat4 view(1.0f);
 	view = camera.GetViewMatrix();
 	glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
@@ -202,8 +217,16 @@ void ParticleGenerator::Draw(Camera &camera) {
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 			glBindVertexArray(0);
+
+			// Update the location of camera and each particle for the sound engine
+			particle.soundEngine->setListenerPosition(posFormatTrans(camera.Position), posFormatTrans(-camera.Front));
+			if (particle.music) {
+				particle.music->setPosition(posFormatTrans(particle.Position));
+			}
 		}
 	}
+
+	
 }
 
 

@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <irrKlang/irrKlang.h>
 
 #include "shader.h"
 #include "texture.h"
@@ -13,10 +14,15 @@ struct Particle {
 	glm::vec3 Position, Velocity, Accelerate, randVelocity;
 	glm::vec4 Color;
 	GLfloat Life;
+	GLfloat distance;
 	GLfloat VelocityChangeCounter; // When the counter is done, change accelerate.
 	bool is_prime; // Prime ones are larger in size and self-luminous.
 	int mode; // 0 -- firefly, 1 -- star, 2 -- snow
-	Particle() : Position(0.0f), Velocity(0.0f), Accelerate(0.0f), randVelocity(0.0f), Color(1.0f), Life(0.0f), is_prime(false), mode(0) {}
+	Particle() : Position(0.0f), Velocity(0.0f), Accelerate(0.0f), randVelocity(0.0f), Color(1.0f), Life(0.0f), distance(0.0), is_prime(false), mode(0) {}
+
+	irrklang::ISoundEngine* soundEngine;
+	irrklang::ISound *music;
+  
 };
 
 class ParticleGenerator {
@@ -48,6 +54,7 @@ private:
 	GLuint Width, Height;
 	std::vector<glm::vec3> emitPoses;
 	GLfloat newParticleCounter;
+	
 
 	// Initializes buffer and vertex attributes
 	void init();

@@ -28,7 +28,7 @@ void Game::Init()
 	// Initialize particle generator
 	Shader tmp1 = ResourceManager::GetShader("lampShader");
 	Texture2D nullTexture;
-	particleSys = new ParticleGenerator(tmp1, nullTexture, 100, Width, Height);
+	particleSys = new ParticleGenerator(tmp1, nullTexture, 500, Width, Height);
 	glm::vec3 emitPos1, emitPos2, emitPos3;
 	emitPos1 = glm::vec3(0.0f, 0.0f, 40.0f); // 三个方向各有一个发射点
 	emitPos2 = glm::vec3(30.0f, 1.0f, 2.0f);
