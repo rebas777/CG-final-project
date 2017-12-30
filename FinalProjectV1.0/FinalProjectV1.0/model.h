@@ -93,7 +93,7 @@ private:
 		{
 			Vertex vertex;
 			glm::vec3 vector; // We declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
-							  // Positions
+			// Positions
 			vector.x = mesh->mVertices[i].x;
 			vector.y = mesh->mVertices[i].y;
 			vector.z = mesh->mVertices[i].z;
@@ -129,12 +129,6 @@ private:
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			// We assume a convention for sampler names in the shaders. Each diffuse texture should be named
-			// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
-			// Same applies to other texture as the following list summarizes:
-			// Diffuse: texture_diffuseN
-			// Specular: texture_specularN
-			// Normal: texture_normalN
 
 			// 1. Diffuse maps
 			vector<Texture2D> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
@@ -142,6 +136,18 @@ private:
 			// 2. Specular maps
 			vector<Texture2D> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+			// Parse color information from material
+			aiColor4D tmpColor1, tmpColor2, tmpColor3;
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &tmpColor1)
+				&& AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &tmpColor2)
+				&& AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &tmpColor3)) { // What about other keys?
+				for (GLuint i = 0; i < mesh->mNumVertices; i++) {
+					vertices[i].Color.r = (tmpColor1.r + tmpColor2.r + tmpColor3.r);
+					vertices[i].Color.g = (tmpColor1.g + tmpColor2.g + tmpColor3.g);
+					vertices[i].Color.b= (tmpColor1.b + tmpColor2.b + tmpColor3.b) ;
+				}
+			}
 		}
 
 		// Return a mesh object created from the extracted mesh data
@@ -185,28 +191,3 @@ private:
 };
 
 
-
-
-//GLint TextureFromFile(const char* path, string directory)
-//{
-//	//Generate texture ID and load texture data 
-//	string filename = string(path);
-//	filename = directory + '/' + filename;
-//	GLuint textureID;
-//	glGenTextures(1, &textureID);
-//	int width, height;
-//	unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
-//	// Assign texture to ID
-//	glBindTexture(GL_TEXTURE_2D, textureID);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-//	glGenerateMipmap(GL_TEXTURE_2D);
-//
-//	// Parameters
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	glBindTexture(GL_TEXTURE_2D, 0);
-//	SOIL_free_image_data(image);
-//	return textureID;
-//}

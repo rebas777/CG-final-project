@@ -26,6 +26,8 @@ struct Vertex {
 	glm::vec3 Normal;
 	// TexCoords
 	glm::vec2 TexCoords;
+	// Color
+	glm::vec3 Color;
 };
 
 struct Texture {
@@ -66,9 +68,9 @@ public:
 			stringstream ss;
 			string number;
 			string name = this->textures[i].type;
-			if (name == "texture_diffuse")
+			if (name == "material.texture_diffuse")
 				ss << diffuseNr++; // Transfer GLuint to stream
-			else if (name == "texture_specular")
+			else if (name == "material.texture_specular")
 				ss << specularNr++; // Transfer GLuint to stream
 			number = ss.str();
 			// Bind the texture
@@ -127,6 +129,9 @@ private:
 		// Vertex Texture Coords
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
+		// Vertex Colors
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Color));
 
 		glBindVertexArray(0);
 	}

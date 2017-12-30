@@ -5,7 +5,8 @@ GLuint loadCubemap(vector<const GLchar*> faces);
 void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps) {
 	Width = width;
 	Height = height;
-	envModel = new Model("models/land.obj");
+	//envModel = new Model("models/land.obj");
+	envModel = new Model("models/lowpolyland/part.obj");
 	particleSys = ps;  // need to initialize the particle system before initialize evironment !!!
 
 	// Initialize skybox
@@ -110,21 +111,11 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetFloat("lightProperty.linear", 0.9);
 	shader.SetFloat("lightProperty.quadratic", 0.68);
 	shader.SetVector3f("lightProperty.ambient", 0.000002f, 0.000002f, 0.000002f); // 调参项： 一只萤火虫的光能对环境光有多大影响？
-	shader.SetVector3f("globalAmbient", 0.06f, 0.06f, 0.06f); // 调参项：全局环境光，营造气氛
+	//shader.SetVector3f("globalAmbient", 0.06f, 0.06f, 0.06f); // 调参项：全局环境光，营造气氛
+	shader.SetVector3f("globalAmbient", 0.14f, 0.14f, 0.14f); // 调参项：全局环境光，营造气氛
 	shader.SetVector3f("lightProperty.diffuse", 219.0 / 255, 1.0f, 47.0 / 255);
 	shader.SetVector3f("lightProperty.specular", 130.0 / 255, 1.0f, 47.0 / 255);
 	
-	
-	/*int i = 0, j = 0;
-	while (j < nLights) {
-		if (particleSys->particles[i].Life > 0) {
-			char str[15];
-			sprintf(str, "lightPos[%d]", j);
-			shader.SetVector3f(str, particleSys->particles[i].Position);
-			j++;
-		}
-		i++;
-	}*/
 
 	int j = 0, nCenter = 0; // nCenter means how many individials is close enough to the attraction
 	for (Particle particle : particleSys->particles) {

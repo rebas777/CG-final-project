@@ -18,7 +18,8 @@ void Game::Init()
 	// Load shaders
 	ResourceManager::LoadShader("shaders/lamp.vs", "shaders/lamp.frag", nullptr, "lampShader");
 	ResourceManager::LoadShader("shaders/lighting.vs", "shaders/lighting.frag", nullptr, "lightingShader");
-	ResourceManager::LoadShader("shaders/environment.vs", "shaders/environment.frag", nullptr, "environmentShader");
+	ResourceManager::LoadShader("shaders/environment_color.vs", "shaders/environment_color.frag", nullptr, "environmentShader");
+	//ResourceManager::LoadShader("shaders/environment_texture.vs", "shaders/environment_texture.frag", nullptr, "environmentShader");
 
 	// Initialize game objects
     box.Init(Width, Height);
