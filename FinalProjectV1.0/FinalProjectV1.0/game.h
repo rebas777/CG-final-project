@@ -45,13 +45,26 @@ public:
 	void Update(GLfloat dt);//运动逻辑
 	void Render();//渲染游戏场景
 
-	// Not general !!!
-	// Light attributes
 	glm::vec3 lightPos;
 	Box box;
 	LightBox lightBox;
 	Environment environment;
 	
+
+private :
+	// Framebuffer object for bloom process
+	GLuint hdrFBO;
+	GLuint colorBuffers[2];
+	GLuint pingpongFBO[2];
+	GLuint pingpongColorbuffers[2];
+	GLuint quadVBO = 0, quadVAO = 0;
+
+	Shader sceneShader;
+	Shader shaderBlur;
+	Shader shaderBloomFinal;
+
+
+	void renderQuad();
 
 	//Model *tmpModel;
 };
