@@ -68,12 +68,12 @@ void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps) {
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("skyboxes/skybox1/rt.jpg");
-	faces.push_back("skyboxes/skybox1/lf.jpg");
-	faces.push_back("skyboxes/skybox1/up.jpg");
-	faces.push_back("skyboxes/skybox1/dn.jpg");
-	faces.push_back("skyboxes/skybox1/bk.jpg");
-	faces.push_back("skyboxes/skybox1/ft.jpg");
+	faces.push_back("skyboxes/lowpolynight/rt.jpg");
+	faces.push_back("skyboxes/lowpolynight/lf.jpg");
+	faces.push_back("skyboxes/lowpolynight/up.jpg");
+	faces.push_back("skyboxes/lowpolynight/dn.jpg");
+	faces.push_back("skyboxes/lowpolynight/bk.jpg");
+	faces.push_back("skyboxes/lowpolynight/ft.jpg");
 	cubemapTexture = loadCubemap(faces);
 
 	ResourceManager::LoadShader("shaders/skybox.vs", "shaders/skybox.frag", nullptr, "skyboxShader");
@@ -102,8 +102,7 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	glBindVertexArray(0);
 	glDepthMask(GL_TRUE);
 
-	//int liveNum = particleSys->GetLiveNum();
-	//int nLights = min(100, liveNum); // maximum of lights: 100
+	// 绘制单独的萤火虫的光照
 	shader.Use();
 	shader.SetVector3f("objectColor", 1.0f, 1.0f, 1.0f);
 	shader.SetVector3f("viewPos", camera.Position);
@@ -115,6 +114,7 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetVector3f("globalAmbient", 0.14f, 0.14f, 0.14f); // 调参项：全局环境光，营造气氛
 	shader.SetVector3f("lightProperty.diffuse", 219.0 / 255, 1.0f, 47.0 / 255);
 	shader.SetVector3f("lightProperty.specular", 130.0 / 255, 1.0f, 47.0 / 255);
+	shader.SetFloat("exposure", 0.3);
 	
 
 	int j = 0, nCenter = 0; // nCenter means how many individials is close enough to the attraction
@@ -132,6 +132,8 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 		}
 	}
 
+
+	// 绘制等效光照点的光照
 	shader.SetInteger("activeLightNum", j);
 	shader.SetInteger("centerNum", nCenter);
 	shader.SetVector3f("centerLightPos", camera.Position);
