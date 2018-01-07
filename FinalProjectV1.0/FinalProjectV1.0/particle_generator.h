@@ -12,7 +12,7 @@
 // Represents a single particle and its state
 struct Particle {
 	glm::vec3 Position, Velocity, Accelerate, randVelocity;
-	glm::vec4 Color;
+	glm::vec3 Color;
 	GLfloat Life;
 	GLfloat distance;
 	GLfloat VelocityChangeCounter; // When the counter is done, change accelerate.
@@ -41,6 +41,10 @@ public:
 
 	void RandUpdate(GLfloat dt, GLfloat newParticles);
 
+	void DieUpdate(GLfloat dt);	
+
+	bool dying;
+
 	void Draw(Camera &camera);
 
 	void SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3);
@@ -48,6 +52,8 @@ public:
 	GLuint GetLiveNum();
 
 	glm::vec3 getIthLivePos(int i);
+
+	void ResetSystem();
 
 private:
 	// State
@@ -68,6 +74,8 @@ private:
 	void init();
 	// Returns the first Particle index that's currently unused e.g. Life <= 0.0f or 0 if no particle is currently inactive
 	GLuint firstUnusedParticle();
+	GLuint firstUnusedParticle_son();
 	// Respawns particle
 	void respawnParticle(Particle &particle);
+	void respawnParticle_son(Particle &particle, int parentNum);
 };

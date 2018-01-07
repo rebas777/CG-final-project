@@ -8,6 +8,7 @@ Game::Game(GLuint width, GLuint height)
 	camera = Camera(glm::vec3(0.0f, 0.0f, 5.0f));
 	sceneNum = 0;
 	hasConstrain = true;
+	finishing = false;
 }
 
 Game::~Game()
@@ -127,6 +128,11 @@ void Game::Init()
 
 void Game::Update(GLfloat dt)
 {
+
+	if (this->finishing) {
+		particleSys->DieUpdate(dt);
+		return;
+	}
 	if (this->hasConstrain) {
 		particleSys->Update(dt, 0.002, camera.Position);
 	}
@@ -148,6 +154,14 @@ void Game::ProcessInput(GLfloat dt)
 	}
 	if (this->Keys[GLFW_KEY_R]) {
 		this->hasConstrain = false;
+	}
+	if (this->Keys[GLFW_KEY_T]) {
+		if (sceneNum == 1) {
+			this->finishing = true;
+		}
+	}
+	if (this->Keys[GLFW_KEY_C]) {
+		this->particleSys->ResetSystem();
 	}
 }
 

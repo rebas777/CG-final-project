@@ -3,9 +3,11 @@
 ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height)
 	: shader(shader), texture(texture), amount(amount), Width(width), Height(height)
 {
+	this->amount_son = 5000;
+	this->dying = false;
 	this->init();
 	this->newParticleCounter = 0;
-	this->amount_son = 5000;
+	
 }
 
 void ParticleGenerator::SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3) {
@@ -84,6 +86,8 @@ void ParticleGenerator::init()
 	for (GLuint i = 0; i < this->amount_son; i++) {
 		this->sonParticles.push_back(Particle());
 	}
+	int k = sonParticles.size();
+	int o = 9;
 
 }
 
@@ -100,9 +104,6 @@ void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPo
 			if (liveAmount < amount) {
 				liveAmount++;
 			}
-			char tmp[100];
-			sprintf(tmp, "liveAmount: %d", liveAmount);
-			//std::cout << tmp << endl;
 		}
 	}
 	newParticleCounter -= (int)newParticleCounter;
@@ -144,12 +145,11 @@ void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPo
 			//float distanceParam = 0.0001 * distance;   //线性正相关
 			//float distanceParam = exp(3-distance);  //指数负相关
 			p.Position += p.Velocity * dt;
-			//TODO: use sin function to disturb color and light
+
 			if (p.Life < dt) {  // The particle nearly dead (will died in next frame)
 				this->liveAmount--;
-				char tmp[100];
-				sprintf(tmp, "liveAmount: %d", liveAmount);
-				//std::cout << tmp << endl;
+				delete(p.soundEngine);
+				delete(p.music);
 			}
 		}
 	}
@@ -200,23 +200,82 @@ void ParticleGenerator::RandUpdate(GLfloat dt, GLfloat newParticles)
 			//TODO: use sin function to disturb color and light
 			if (p.Life < dt) {  // The particle nearly dead (will died in next frame)
 				this->liveAmount--;
-				char tmp[100];
-				sprintf(tmp, "liveAmount: %d", liveAmount);
-				//std::cout << tmp << endl;
+				delete(p.soundEngine);
+				delete(p.music);
 			}
 		}
 	}
 }
+
+void ParticleGenerator::DieUpdate(GLfloat dt) {
+
+
+	if (dying == false) {
+		for (GLuint i = 0; i < this->amount; i++) {
+			Particle &p = this->particles[i];
+			if (p.Life > 0.0f) {
+				p.Life = 10.0f;
+				p.Accelerate = glm::vec3(0.0, -0.5, 0.0);
+				p.Velocity /= 18;
+			}
+		}
+	}
+	dying = true;
+
+    // emit 1 sonParticles from every living parentParticle & update parent particles
+	for (GLuint i = 0; i < this->amount; i++) {
+		Particle &pp = this->particles[i];
+		// reduce life
+		pp.Life -= dt;
+		if (pp.Life > 0.0) {
+			// update parent particle color.
+			pp.Color -= (dt / pp.Life)*pp.Color;
+
+			for (int j = 0; j < 1; j++) {
+				int unusedParticle = this->firstUnusedParticle_son();
+				this->respawnParticle_son(this->sonParticles[unusedParticle], i);
+			}
+			pp.Velocity += pp.Accelerate * dt;
+			pp.Position += pp.Velocity * dt;
+
+			if (pp.Life < dt) {  // The particle nearly dead (will died in next frame)
+				delete(pp.soundEngine);
+				delete(pp.music);
+			}
+		}
+	}
+	// update son particles
+	for (GLuint i = 0; i < amount_son; i++) {
+		Particle &sp = this->sonParticles[i];
+		if (sp.Life > 0) {
+			sp.Life -= dt;
+			glm::vec3 gravity = glm::vec3(0, -2.0, 0);
+			sp.Velocity += gravity * dt;
+			sp.Position += sp.Velocity *dt;
+		}
+	}
+}
+
+void ParticleGenerator::ResetSystem() {
+	for (int i = 0; i < amount; i++) {
+		Particle &pp = this->particles[i];
+		pp.Life = 0;
+	}
+	for (int j = 0; j < amount_son; j++) {
+		Particle &sp = this->sonParticles[j];
+		sp.Life = 0;
+	}
+}
+
 
 void ParticleGenerator::respawnParticle(Particle &particle)
 {
 	GLfloat random1 = ((rand() % 100) - 50) / 100.0f; // [-5, 5]
 	GLfloat random2 = ((rand() % 100) - 50) / 100.0f;
 	GLfloat random3 = ((rand() % 100) - 50) / 100.0f;
-	GLfloat rColor = 0.5 + ((rand() % 100) / 100.0f);
 	glm::vec3 initPosDisturb = glm::vec3(random3*5, random2*5, random1*5);
 	particle.Position = emitPoses[rand()%3] + initPosDisturb;  // 位置扰动
-	particle.Color = glm::vec4(rColor, rColor, rColor, 1.0f);
+	particle.Color = glm::vec3(0.3f, 1.0f, 0.0f);
 	particle.Life = 50.0f;
 	particle.is_prime = false;
 	particle.mode = 0;
@@ -230,6 +289,15 @@ void ParticleGenerator::respawnParticle(Particle &particle)
 	particle.music = particle.soundEngine->play3D("sounds/insect.wav", irrklang::vec3df(0, 0, 0), true, false, true);
 	if (particle.music)
 		particle.music->setMinDistance(0.5f);
+}
+void ParticleGenerator::respawnParticle_son(Particle &particle, int parentNum) {
+	GLfloat random1 = ((rand() % 100) - 50) / 100.0f; // [-5, 5]
+	GLfloat random2 = ((rand() % 100) - 50) / 100.0f;
+	GLfloat random3 = ((rand() % 100) - 50) / 100.0f;
+	particle.Position = this->particles[parentNum].Position;
+	particle.Color = this->particles[parentNum].Color;
+	particle.Life = 0.8;
+	particle.Velocity = glm::vec3(random1, random2, random3);
 }
 
 // Stores the index of the last particle used (for quick access to next dead particle)
@@ -255,6 +323,27 @@ GLuint ParticleGenerator::firstUnusedParticle()
 	return 0;
 }
 
+GLuint lastUsedParticle_son = 0;
+GLuint ParticleGenerator::firstUnusedParticle_son() {
+	// First search from last used particle, this will usually return almost instantly
+	for (GLuint i = lastUsedParticle_son; i < this->amount_son; ++i) {
+		if (this->sonParticles[i].Life <= 0.0f) {
+			lastUsedParticle_son = i;
+			return i;
+		}
+	}
+	// Otherwise, do a linear search
+	for (GLuint i = 0; i < lastUsedParticle_son; ++i) {
+		if (this->sonParticles[i].Life <= 0.0f) {
+			lastUsedParticle_son = i;
+			return i;
+		}
+	}
+	// All particles are taken, override the first one (note that if it repeatedly hits this case, more particles should be reserved)
+	lastUsedParticle_son = 0;
+	return 0;
+}
+
 inline irrklang::vec3df posFormatTrans(glm::vec3 src) {
 	irrklang::vec3df dst(src[0], src[1], src[2]);
 	return dst;
@@ -268,12 +357,11 @@ void ParticleGenerator::Draw(Camera &camera) {
 	this->shader.Use();
 	shader.SetMatrix4("view", view);
 	shader.SetMatrix4("projection", projection);
-	glm::vec3 fireflyColor = glm::vec3(0.3f, 1.0f, 0.0f);
-	shader.SetVector3f("lightColor", fireflyColor);
-	for (Particle particle : this->particles)
+	for (Particle particle : this->particles) // draw all parent particles
 	{
 		if (particle.Life > 0.0f)
 		{
+			shader.SetVector3f("lightColor", particle.Color);
 			glm::mat4 model(1.0f);
 			model = glm::translate(model, particle.Position);
 			model = glm::scale(model, glm::vec3(0.02f)); // Make it a smaller cube
@@ -290,6 +378,20 @@ void ParticleGenerator::Draw(Camera &camera) {
 		}
 	}
 
+	if (dying) {
+		for (Particle sonParticle : this->sonParticles) {
+			if (sonParticle.Life > 0) {
+				shader.SetVector3f("lightColor", sonParticle.Color);
+				glm::mat4 model(1.0f);
+				model = glm::translate(model, sonParticle.Position);
+				model = glm::scale(model, glm::vec3(0.004f)); // Make it a smaller cube
+				shader.SetMatrix4("model", model);
+				glBindVertexArray(VAO);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+				glBindVertexArray(0);
+			}
+		}
+	}
 	
 }
 

@@ -52,6 +52,7 @@ private :
 
 	GLuint sceneNum; // 0 -- low poly firefly scene;  1 -- realistic scene;
 	bool hasConstrain;
+	bool finishing; // particle system is dying, fading and generate secondaty particle system.
 
 	// Framebuffer object for bloom process
 	GLuint hdrFBO;
