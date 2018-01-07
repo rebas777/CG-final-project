@@ -45,13 +45,14 @@ public:
 	void Update(GLfloat dt);//运动逻辑
 	void Render();//渲染游戏场景
 
-	glm::vec3 lightPos;
-	Box box;
-	LightBox lightBox;
 	Environment environment;
-	
+	Environment environment_real;
 
 private :
+
+	GLuint sceneNum; // 0 -- low poly firefly scene;  1 -- realistic scene;
+	bool hasConstrain;
+
 	// Framebuffer object for bloom process
 	GLuint hdrFBO;
 	GLuint colorBuffers[2];

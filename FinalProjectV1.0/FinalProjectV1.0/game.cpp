@@ -6,6 +6,8 @@ Game::Game(GLuint width, GLuint height)
 	: State(GAME_ACTIVE), Keys(), Width(width), Height(height)
 {
 	camera = Camera(glm::vec3(0.0f, 0.0f, 5.0f));
+	sceneNum = 0;
+	hasConstrain = true;
 }
 
 Game::~Game()
@@ -16,26 +18,24 @@ Game::~Game()
 void Game::Init()
 {
 	// Load shaders
+	// Shader for rendering the firefly itself
 	ResourceManager::LoadShader("shaders/firefly.vs", "shaders/firefly.frag", nullptr, "lampShader");
-	ResourceManager::LoadShader("shaders/lighting.vs", "shaders/lighting.frag", nullptr, "lightingShader");
-	ResourceManager::LoadShader("shaders/environment_color.vs", "shaders/environment_color_hdr.frag", nullptr, "environmentShader");
-	//ResourceManager::LoadShader("shaders/environment_texture.vs", "shaders/environment_texture.frag", nullptr, "environmentShader");
 
-	// shader for rendering the image from FBO
+	// Shader for rendering the environment model
+	ResourceManager::LoadShader("shaders/environment_color.vs", "shaders/environment_color_hdr.frag", nullptr, "environmentShader");
+	ResourceManager::LoadShader("shaders/environment_texture.vs", "shaders/environment_texture.frag", nullptr, "environmentShader_real");
+
+	// Shader for rendering the image from FBO to the whole screen
 	ResourceManager::LoadShader("shaders/FBOscene.vs", "shaders/FBOscene.frag", nullptr, "sceneShader");
 
-	// shader for gaussian blur.
+	// Shader for gaussian blur.
 	ResourceManager::LoadShader("shaders/shaderBlur.vs", "shaders/shaderBlur.frag", nullptr, "shaderBlur");
 
-	// shader for blending origin image and the after-blur image.
+	// Shader for blending origin image and the after-blur image.
 	ResourceManager::LoadShader("shaders/shaderBloomFinal.vs", "shaders/shaderBloomFinal.frag", nullptr, "shaderBloomFinal");
 
 
-
-	// Initialize game objects
-    box.Init(Width, Height);
-	lightBox.Init(Width, Height);
-	//tmpModel = new Model("models/car/Avent.obj");
+	/*************************************************** Initialize the low poly firefly scene **************************************************/
 
 	// Initialize particle generator
 	Shader tmp1 = ResourceManager::GetShader("lampShader");
@@ -48,7 +48,7 @@ void Game::Init()
 	particleSys->SetEmitPos(emitPos1, emitPos2, emitPos3);
 
 	// Initialize  environment
-	environment.Init(Width, Height, particleSys);
+	environment.Init(Width, Height, particleSys, "models/lowpolyland/part.obj");
 
 	// 创建主帧缓冲，之后所有的粒子渲染都在这个帧缓冲里进行
 	glGenFramebuffers(1, &hdrFBO);
@@ -111,28 +111,53 @@ void Game::Init()
 	shaderBloomFinal.SetInteger("scene", 0);
 	shaderBloomFinal.SetInteger("bloomBlur", 1);
 
+	/************************************************* End initializing the low poly firefly scene ************************************************/
+
+
+	/************************************************* Initializing the realistic scene ***********************************************************/
+	environment_real.Init(Width, Height, particleSys, "models/island_with_texture/Small Tropical Island.obj");
+	//environment_real.Init(Width, Height, particleSys, "models/insect/insect.obj");
+	environment_real.terrainPos = glm::vec3(0.0f, -40.0f, -5.0f);
+	environment_real.terrainScale = glm::vec3(0.4f, 0.4f, 0.4f);
+
+
+	/************************************************ End initializing the realistic scene ********************************************************/
+
 }
 
 void Game::Update(GLfloat dt)
 {
-	//box.Update(camera.Position, particleSys->GetLiveNum());
-	//lightBox.Update();
-	particleSys->Update(dt, 0.002, camera.Position);
-	//particleSys->Update(dt, 0.002, glm::vec3(0.0f, 0.0f, 15.0f));
+	if (this->hasConstrain) {
+		particleSys->Update(dt, 0.002, camera.Position);
+	}
+	else {
+		particleSys->RandUpdate(dt, 0.002);
+	}
+	
+		
 }
 
 
 void Game::ProcessInput(GLfloat dt)
 {
-
+	if (this->Keys[GLFW_KEY_Q]) {
+		this->sceneNum = 1;
+	}
+	if (this->Keys[GLFW_KEY_E]) {
+		this->hasConstrain = true;
+	}
+	if (this->Keys[GLFW_KEY_R]) {
+		this->hasConstrain = false;
+	}
 }
 
 void Game::Render()
 {
 
-	// Step1: 把所有粒子渲染在帧缓冲里（以便后续的后处理）
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (sceneNum == 0) { // Render the low poly firefly scene
+		// Step1: 把所有粒子渲染在帧缓冲里（以便后续的后处理）
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw the environment
 		Shader tmp2 = ResourceManager::GetShader("environmentShader");
@@ -141,41 +166,53 @@ void Game::Render()
 		// Draw the particle system
 		particleSys->Draw(camera);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// Step2: 从已经渲染好的帧缓冲里面取出图像进行 Two-pass Gaussian Blur
-	bool horizontal = true, first_iteration = true;
-	unsigned int amount = 10; // 10 次高斯模糊
-	shaderBlur.Use();
-	for (unsigned int i = 0; i < amount; i++)
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-		shaderBlur.SetInteger("horizontal", horizontal);
-		glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+		// Step2: 从已经渲染好的帧缓冲里面取出图像进行 Two-pass Gaussian Blur
+		bool horizontal = true, first_iteration = true;
+		unsigned int amount = 10; // 10 次高斯模糊
+		shaderBlur.Use();
+		for (unsigned int i = 0; i < amount; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+			shaderBlur.SetInteger("horizontal", horizontal);
+			glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+			renderQuad();
+			horizontal = !horizontal;
+			if (first_iteration)
+				first_iteration = false;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//// Step1.5: 从帧缓冲中取出图像渲染到默认缓冲
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//sceneShader.Use();
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
+		//renderQuad();
+
+		// Step3: 将帧缓冲中的原内容和高斯模糊过的内容渲染在一起，达到 bloom 的效果。
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shaderBloomFinal.Use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
+		shaderBloomFinal.SetInteger("bloom", true);
+		shaderBloomFinal.SetFloat("exposure", 1.0f);
 		renderQuad();
-		horizontal = !horizontal;
-		if (first_iteration)
-			first_iteration = false;
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	else { // Render the realistic scene
 
-	//// Step1.5: 从帧缓冲中取出图像渲染到默认缓冲
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//sceneShader.Use();
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-	//renderQuad();
+		   // Draw the environment
+		Shader tmp6 = ResourceManager::GetShader("environmentShader_real");
+		environment_real.Draw(tmp6, camera);
 
-	// Step3: 将帧缓冲中的原内容和高斯模糊过的内容渲染在一起，达到 bloom 的效果。
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	shaderBloomFinal.Use();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-	shaderBloomFinal.SetInteger("bloom", true);
-	shaderBloomFinal.SetFloat("exposure", 1.0f);
-	renderQuad();
+		// Draw the particle system
+		particleSys->Draw(camera);
+		
+
+	}
 
 }
 

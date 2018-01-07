@@ -45,8 +45,9 @@ void main()
   vec3 viewDir = normalize(viewPos - FragPos);
   vec3 norm = normalize(Normal);
     
-  for(int i = 0; i < activeLightNum; i++)
-      result += CalcPointLight(lightProperty, lightPos[i], material, norm, FragPos, viewDir);
+  // 真实场景去掉个体光照光照
+  /*for(int i = 0; i < activeLightNum; i++)
+      result += CalcPointLight(lightProperty, lightPos[i], material, norm, FragPos, viewDir);*/
 
   result += CalcPointLight(centerLightProperty, centerLightPos, material, norm, FragPos, viewDir);
   result += globalAmbient* vec3(texture(material.texture_specular1, TexCoords));
@@ -66,8 +67,8 @@ vec3 CalcPointLight(LightProperty lightProperty, vec3 lightPos,  Material mat, v
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 15); // can set mat.shininess
     // Attenuation
     float distance = length(lightPos - fragPos);
-    float attenuation = 1.0f / (lightProperty.constant + lightProperty.linear * distance 
-      + lightProperty.quadratic * (distance * distance));    
+    float attenuation = 1.0f / (lightProperty.constant/3 + lightProperty.linear/3 * distance 
+      + lightProperty.quadratic/3 * (distance * distance));    
     // Combine results
     vec3 ambient = lightProperty.ambient* vec3(texture(mat.texture_diffuse1, TexCoords));
     vec3 diffuse = lightProperty.diffuse * diff* vec3(texture(mat.texture_diffuse1, TexCoords));

@@ -18,8 +18,11 @@ struct Particle {
 	GLfloat VelocityChangeCounter; // When the counter is done, change accelerate.
 	bool is_prime; // Prime ones are larger in size and self-luminous.
 	int mode; // 0 -- firefly, 1 -- star, 2 -- snow
-	Particle() : Position(0.0f), Velocity(0.0f), Accelerate(0.0f), randVelocity(0.0f), Color(1.0f), Life(0.0f), distance(0.0), is_prime(false), mode(0) {}
+	int parent; // 次级粒子系统的标志，如果为一级粒子则为-1，如果为次级粒子则为其父亲的序号。
+	Particle() : Position(0.0f), Velocity(0.0f), Accelerate(0.0f), randVelocity(0.0f),
+		parent(-1), Color(1.0f), Life(0.0f), distance(0.0), is_prime(false), mode(0) {}
 
+	
 	irrklang::ISoundEngine* soundEngine;
 	irrklang::ISound *music;
   
@@ -30,9 +33,13 @@ public:
 
 	std::vector<Particle> particles;
 
+	std::vector<Particle> sonParticles;
+
 	ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height);
 
 	void Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos);
+
+	void RandUpdate(GLfloat dt, GLfloat newParticles);
 
 	void Draw(Camera &camera);
 
@@ -46,6 +53,7 @@ private:
 	// State
 	
 	GLuint amount;
+	GLuint amount_son;
 	GLuint liveAmount;
 	// Render state
 	Shader shader;

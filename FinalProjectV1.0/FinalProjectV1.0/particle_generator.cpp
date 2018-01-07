@@ -5,6 +5,7 @@ ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, GLuint am
 {
 	this->init();
 	this->newParticleCounter = 0;
+	this->amount_son = 5000;
 }
 
 void ParticleGenerator::SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3) {
@@ -80,11 +81,15 @@ void ParticleGenerator::init()
 	for (GLuint i = 0; i < this->amount; ++i)
 		this->particles.push_back(Particle());
 
+	for (GLuint i = 0; i < this->amount_son; i++) {
+		this->sonParticles.push_back(Particle());
+	}
+
 }
 
 void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos)
-{
-	dt /= 6;
+{ // 有约束的自由运动
+	dt /= 5;
 	newParticleCounter += newParticles;
 	if (newParticleCounter >= 1) {
 		// Add new particles 
@@ -138,6 +143,59 @@ void ParticleGenerator::Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPo
 			// calculate V_center
 			//float distanceParam = 0.0001 * distance;   //线性正相关
 			//float distanceParam = exp(3-distance);  //指数负相关
+			p.Position += p.Velocity * dt;
+			//TODO: use sin function to disturb color and light
+			if (p.Life < dt) {  // The particle nearly dead (will died in next frame)
+				this->liveAmount--;
+				char tmp[100];
+				sprintf(tmp, "liveAmount: %d", liveAmount);
+				//std::cout << tmp << endl;
+			}
+		}
+	}
+}
+
+void ParticleGenerator::RandUpdate(GLfloat dt, GLfloat newParticles) 
+{// 无约束的自由运动
+	dt /= 5;
+	newParticleCounter += newParticles;
+	if (newParticleCounter >= 1) {
+		// Add new particles 
+		for (GLuint i = 0; i < newParticleCounter; ++i)
+		{
+			int unusedParticle = this->firstUnusedParticle();
+			this->respawnParticle(this->particles[unusedParticle]);
+			if (liveAmount < amount) {
+				liveAmount++;
+			}
+			char tmp[100];
+			sprintf(tmp, "liveAmount: %d", liveAmount);
+			//std::cout << tmp << endl;
+		}
+	}
+	newParticleCounter -= (int)newParticleCounter;
+	// Update all particles
+	for (GLuint i = 0; i < this->amount; ++i)
+	{
+		Particle &p = this->particles[i];
+		// reduce life
+		p.Life -= dt;
+		if (p.Life > 0.0f)
+		{	// particle is alive, thus update
+
+			// if need, change the accelerate
+			p.VelocityChangeCounter++;
+			if (p.VelocityChangeCounter > 100) {
+				float randX = (rand() % 100 - 50) / 5.0f;
+				float randY = (rand() % 100 - 50) / 5.0f;
+				float randZ = (rand() % 100 - 50) / 5.0f;
+				p.Accelerate = { randX, randY, randZ };
+				p.VelocityChangeCounter = 0;
+			}
+
+
+			p.randVelocity += p.Accelerate * dt;
+			p.Velocity = p.randVelocity;
 			p.Position += p.Velocity * dt;
 			//TODO: use sin function to disturb color and light
 			if (p.Life < dt) {  // The particle nearly dead (will died in next frame)
