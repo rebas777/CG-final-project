@@ -5,7 +5,6 @@ GLuint loadCubemap(vector<const GLchar*> faces);
 void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps, GLchar *path) {
 	Width = width;
 	Height = height;
-	//envModel = new Model("models/lowpolyland/part.obj");
 	envModel = new Model((GLchar *)path);
 	particleSys = ps;  // need to initialize the particle system before initialize evironment !!!
 

@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "Camera.h"
+#include "model.h"
 
 // Represents a single particle and its state
 struct Particle {
@@ -35,7 +36,7 @@ public:
 
 	std::vector<Particle> sonParticles;
 
-	ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height);
+	ParticleGenerator(Shader shader, Shader bugShader, Texture2D texture, GLuint amount, GLuint width, GLuint height);
 
 	void Update(GLfloat dt, GLfloat newParticles, glm::vec3 dstPos);
 
@@ -45,6 +46,8 @@ public:
 
 	bool dying;
 
+	bool isReal;
+
 	void Draw(Camera &camera);
 
 	void SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::vec3 emitPos3);
@@ -53,7 +56,7 @@ public:
 
 	glm::vec3 getIthLivePos(int i);
 
-	void ResetSystem();
+	void ResetSystem(); 
 
 private:
 	// State
@@ -63,11 +66,14 @@ private:
 	GLuint liveAmount;
 	// Render state
 	Shader shader;
+	Shader bugShader;
 	Texture2D texture;
 	GLuint VBO, VAO;
 	GLuint Width, Height;
 	std::vector<glm::vec3> emitPoses;
 	GLfloat newParticleCounter;
+	Model *bugModel;
+	
 	
 
 	// Initializes buffer and vertex attributes

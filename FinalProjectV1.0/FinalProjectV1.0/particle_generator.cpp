@@ -1,10 +1,11 @@
 #include "particle_generator.h"
 
-ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, GLuint amount, GLuint width, GLuint height)
-	: shader(shader), texture(texture), amount(amount), Width(width), Height(height)
+ParticleGenerator::ParticleGenerator(Shader shader, Shader bugShader, Texture2D texture, GLuint amount, GLuint width, GLuint height)
+	: shader(shader), bugShader(bugShader), texture(texture), amount(amount), Width(width), Height(height)
 {
 	this->amount_son = 5000;
 	this->dying = false;
+	this->isReal = false;
 	this->init();
 	this->newParticleCounter = 0;
 	
@@ -18,6 +19,33 @@ void ParticleGenerator::SetEmitPos(glm::vec3 emitPos1, glm::vec3 emitPos2, glm::
 
 void ParticleGenerator::init()
 {
+
+	float vertices1[] = {
+		-0.5, -1, 0, 0.33, 0,
+		0.5, -1, 0, 0.66, 0,
+		1, -0.5, 0, 1, 0.33,
+
+		-0.5, -1, 0, 0.33, 0,
+		1, -0.5, 0, 1, 0.33,
+		1, 0.5, 0.0, 1, 0.66,
+
+		-0.5, -1, 0, 0.33, 0,
+		1, 0.5, 0.0, 1, 0.66,
+		0.5, 1, 0, 0.66, 1,
+
+		-0.5, -1, 0, 0.33, 0,
+		0.5, 1, 0, 0.66, 1,
+		-0.5, 1, 0, 0.33, 1,
+
+		-0.5, -1, 0, 0.33, 0,
+		-0.5, 1, 0, 0.33, 1,
+		-1, 0.5, 0, 0, 0.66,
+
+		-0.5, -1, 0, 0.33, 0,
+		-1, 0.5, 0, 0, 0.66,
+		-1, -0.5, 0, 0, 0.33
+	};
+
 	float vertices[] = {
 		// back face
 		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
@@ -86,8 +114,9 @@ void ParticleGenerator::init()
 	for (GLuint i = 0; i < this->amount_son; i++) {
 		this->sonParticles.push_back(Particle());
 	}
-	int k = sonParticles.size();
-	int o = 9;
+
+	// Initialize bug model
+	bugModel = new Model("models/insect/insect.obj");
 
 }
 
@@ -200,8 +229,8 @@ void ParticleGenerator::RandUpdate(GLfloat dt, GLfloat newParticles)
 			//TODO: use sin function to disturb color and light
 			if (p.Life < dt) {  // The particle nearly dead (will died in next frame)
 				this->liveAmount--;
-				delete(p.soundEngine);
-				delete(p.music);
+				//delete(p.soundEngine);
+				//delete(p.music);
 			}
 		}
 	}
@@ -239,8 +268,8 @@ void ParticleGenerator::DieUpdate(GLfloat dt) {
 			pp.Position += pp.Velocity * dt;
 
 			if (pp.Life < dt) {  // The particle nearly dead (will died in next frame)
-				delete(pp.soundEngine);
-				delete(pp.music);
+				//delete(pp.soundEngine);
+				//delete(pp.music);
 			}
 		}
 	}
@@ -357,18 +386,47 @@ void ParticleGenerator::Draw(Camera &camera) {
 	this->shader.Use();
 	shader.SetMatrix4("view", view);
 	shader.SetMatrix4("projection", projection);
+	bugShader.Use();
+	bugShader.SetMatrix4("view", view);
+	bugShader.SetMatrix4("projection", projection);
 	for (Particle particle : this->particles) // draw all parent particles
 	{
 		if (particle.Life > 0.0f)
 		{
-			shader.SetVector3f("lightColor", particle.Color);
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, particle.Position);
-			model = glm::scale(model, glm::vec3(0.02f)); // Make it a smaller cube
-			shader.SetMatrix4("model", model);
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-			glBindVertexArray(0);
+			if (isReal) {
+				//shader.Use();
+				//shader.SetVector3f("lightColor", particle.Color);
+				//glm::mat4 model(1.0f);
+				glm::mat4 bugmodel(1.0f);
+				//model = glm::translate(model, particle.Position);
+
+				bugmodel = glm::translate(bugmodel, particle.Position);
+				bugmodel = glm::translate(bugmodel, glm::vec3(0.0, 0.0, 0.10)); // ½ÃÕýÄ£ÐÍÆ«²î
+				bugmodel = glm::scale(bugmodel, glm::vec3(0.0006f)); // Make it a smaller cube
+				bugmodel = glm::rotate(bugmodel, -55.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+				//model = glm::scale(model, glm::vec3(0.02f));
+				/*shader.Use();
+				shader.SetMatrix4("model", model);
+				shader.SetVector3f("lightColor", particle.Color);
+				glBindVertexArray(VAO);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+				glBindVertexArray(0);*/
+				bugShader.Use();
+				bugShader.SetMatrix4("model", bugmodel);
+				bugShader.SetVector3f("lightColor", particle.Color);
+				bugModel->Draw(bugShader);
+			}
+			else {
+				shader.Use();
+				shader.SetVector3f("lightColor", particle.Color);
+				glm::mat4 model(1.0f);
+				model = glm::translate(model, particle.Position);
+				model = glm::scale(model, glm::vec3(0.02f)); // Make it a smaller cube
+				shader.SetMatrix4("model", model);
+				glBindVertexArray(VAO);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+				glBindVertexArray(0);
+			}
 
 			// Update the location of camera and each particle for the sound engine
 			particle.soundEngine->setListenerPosition(posFormatTrans(camera.Position), posFormatTrans(-camera.Front));
@@ -381,6 +439,7 @@ void ParticleGenerator::Draw(Camera &camera) {
 	if (dying) {
 		for (Particle sonParticle : this->sonParticles) {
 			if (sonParticle.Life > 0) {
+				shader.Use();
 				shader.SetVector3f("lightColor", sonParticle.Color);
 				glm::mat4 model(1.0f);
 				model = glm::translate(model, sonParticle.Position);
@@ -392,7 +451,6 @@ void ParticleGenerator::Draw(Camera &camera) {
 			}
 		}
 	}
-	
 }
 
 

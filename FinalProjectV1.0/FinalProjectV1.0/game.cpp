@@ -21,6 +21,7 @@ void Game::Init()
 	// Load shaders
 	// Shader for rendering the firefly itself
 	ResourceManager::LoadShader("shaders/firefly.vs", "shaders/firefly.frag", nullptr, "lampShader");
+	ResourceManager::LoadShader("shaders/bugShader.vs", "shaders/bugShader.frag", nullptr, "bugShader");
 
 	// Shader for rendering the environment model
 	ResourceManager::LoadShader("shaders/environment_color.vs", "shaders/environment_color_hdr.frag", nullptr, "environmentShader");
@@ -40,8 +41,9 @@ void Game::Init()
 
 	// Initialize particle generator
 	Shader tmp1 = ResourceManager::GetShader("lampShader");
+	Shader bugShader = ResourceManager::GetShader("bugShader");
 	Texture2D nullTexture;
-	particleSys = new ParticleGenerator(tmp1, nullTexture, 500, Width, Height);
+	particleSys = new ParticleGenerator(tmp1, bugShader, nullTexture, 500, Width, Height);
 	glm::vec3 emitPos1, emitPos2, emitPos3;
 	emitPos1 = glm::vec3(0.0f, 0.0f, 40.0f); // 三个方向各有一个发射点
 	emitPos2 = glm::vec3(30.0f, 1.0f, 2.0f);
@@ -117,9 +119,11 @@ void Game::Init()
 
 	/************************************************* Initializing the realistic scene ***********************************************************/
 	environment_real.Init(Width, Height, particleSys, "models/island_with_texture/Small Tropical Island.obj");
-	//environment_real.Init(Width, Height, particleSys, "models/insect/insect.obj");
+	//environment_real.Init(Width, Height, particleSys, "models/ball.fbx");
 	environment_real.terrainPos = glm::vec3(0.0f, -40.0f, -5.0f);
+	//environment_real.terrainPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	environment_real.terrainScale = glm::vec3(0.4f, 0.4f, 0.4f);
+	//environment_real.terrainScale = glm::vec3(4.0f, 4.0f, 4.0f);
 
 
 	/************************************************ End initializing the realistic scene ********************************************************/
@@ -148,6 +152,7 @@ void Game::ProcessInput(GLfloat dt)
 {
 	if (this->Keys[GLFW_KEY_Q]) {
 		this->sceneNum = 1;
+		this->particleSys->isReal = true;
 	}
 	if (this->Keys[GLFW_KEY_E]) {
 		this->hasConstrain = true;
