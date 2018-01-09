@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <math.h>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -10,6 +11,8 @@
 #include "Camera.h"
 #include "model.h"
 
+#define PI 3.1415926535
+
 // Represents a single particle and its state
 struct Particle {
 	glm::vec3 Position, Velocity, Accelerate, randVelocity;
@@ -17,11 +20,9 @@ struct Particle {
 	GLfloat Life;
 	GLfloat distance;
 	GLfloat VelocityChangeCounter; // When the counter is done, change accelerate.
-	bool is_prime; // Prime ones are larger in size and self-luminous.
-	int mode; // 0 -- firefly, 1 -- star, 2 -- snow
 	int parent; // 次级粒子系统的标志，如果为一级粒子则为-1，如果为次级粒子则为其父亲的序号。
 	Particle() : Position(0.0f), Velocity(0.0f), Accelerate(0.0f), randVelocity(0.0f),
-		parent(-1), Color(1.0f), Life(0.0f), distance(0.0), is_prime(false), mode(0) {}
+		parent(-1), Color(1.0f), Life(0.0f), distance(0.0){}
 
 	
 	irrklang::ISoundEngine* soundEngine;

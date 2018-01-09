@@ -68,6 +68,6 @@ vec3 CalcPointLight(LightProperty lightProperty, vec3 lightPos, vec3 normal, vec
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (diffuse + specular);
+    return (diffuse + specular + ambient);
 
 }

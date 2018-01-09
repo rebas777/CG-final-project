@@ -138,10 +138,10 @@ void Game::Update(GLfloat dt)
 		return;
 	}
 	if (this->hasConstrain) {
-		particleSys->Update(dt, 0.002, camera.Position);
+		particleSys->Update(dt, 0.01, camera.Position);
 	}
 	else {
-		particleSys->RandUpdate(dt, 0.002);
+		particleSys->RandUpdate(dt, 0.01);
 	}
 	
 		

@@ -305,9 +305,7 @@ void ParticleGenerator::respawnParticle(Particle &particle)
 	glm::vec3 initPosDisturb = glm::vec3(random3*5, random2*5, random1*5);
 	particle.Position = emitPoses[rand()%3] + initPosDisturb;  // 位置扰动
 	particle.Color = glm::vec3(0.3f, 1.0f, 0.0f);
-	particle.Life = 50.0f;
-	particle.is_prime = false;
-	particle.mode = 0;
+	particle.Life = 500.0f;
 	particle.Velocity = glm::vec3(random1, random2, random3);
 	particle.VelocityChangeCounter = 0;
 	particle.Accelerate = glm::vec3(0.0f);
@@ -400,10 +398,36 @@ void ParticleGenerator::Draw(Camera &camera) {
 				glm::mat4 bugmodel(1.0f);
 				//model = glm::translate(model, particle.Position);
 
+				
 				bugmodel = glm::translate(bugmodel, particle.Position);
+				float x = particle.Velocity.x;
+				if (x == 0)
+					return;
+				float z = particle.Velocity.z;
+				float raw_theta = atan(abs(z / x));
+				float theta;
+				if (x > 0) {
+					if (z >= 0) {
+						theta = raw_theta;
+					}
+					else {
+						theta = 2 * PI - raw_theta;
+					}
+				}
+				else { // x < 0
+					if (z >= 0) {
+						theta = PI - raw_theta;
+					}
+					else {
+						theta = PI + raw_theta;
+					}
+				}
+				bugmodel = glm::rotate(bugmodel, (float)PI/2, glm::vec3(0.0f, 1.0f, 0.0f));// 矫正模型偏差
+				bugmodel = glm::rotate(bugmodel, theta, glm::vec3(0.0f, 1.0f, 0.0f));
 				bugmodel = glm::translate(bugmodel, glm::vec3(0.0, 0.0, 0.10)); // 矫正模型偏差
+				
 				bugmodel = glm::scale(bugmodel, glm::vec3(0.0006f)); // Make it a smaller cube
-				bugmodel = glm::rotate(bugmodel, -55.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+				
 				//model = glm::scale(model, glm::vec3(0.02f));
 				/*shader.Use();
 				shader.SetMatrix4("model", model);
