@@ -68,12 +68,12 @@ void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps, GLcha
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("skyboxes/lowpolynight/bk.jpg");
-	faces.push_back("skyboxes/lowpolynight/ft.jpg");
-	faces.push_back("skyboxes/lowpolynight/up.jpg");
-	faces.push_back("skyboxes/lowpolynight/dn.jpg");
-	faces.push_back("skyboxes/lowpolynight/rt.jpg");
-	faces.push_back("skyboxes/lowpolynight/lf.jpg");
+	faces.push_back("skyboxes/low_poly/bk.jpg");
+	faces.push_back("skyboxes/low_poly/ft.jpg");
+	faces.push_back("skyboxes/low_poly/up.jpg");
+	faces.push_back("skyboxes/low_poly/dn.jpg");
+	faces.push_back("skyboxes/low_poly/rt.jpg");
+	faces.push_back("skyboxes/low_poly/lf.jpg");
 	cubemapTexture = loadCubemap(faces);
 
 	vector<const GLchar*> faces_real;
