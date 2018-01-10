@@ -8,7 +8,7 @@ void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps, GLcha
 	envModel = new Model((GLchar *)path);
 	particleSys = ps;  // need to initialize the particle system before initialize evironment !!!
 
-	// Initialize skybox
+					   // Initialize skybox
 	GLfloat skyboxVertices[] = {
 		// Positions          
 		-1.0f,  1.0f, -1.0f,
@@ -54,6 +54,7 @@ void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps, GLcha
 		1.0f, -1.0f,  1.0f
 	};
 
+
 	// Setup skybox VAO
 	GLuint skyboxVBO;
 	glGenVertexArrays(1, &skyboxVAO);
@@ -67,13 +68,22 @@ void Environment::Init(GLuint width, GLuint height, ParticleGenerator *ps, GLcha
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("skyboxes/lowpolynight/rt.jpg");
-	faces.push_back("skyboxes/lowpolynight/lf.jpg");
-	faces.push_back("skyboxes/lowpolynight/up.jpg");
-	faces.push_back("skyboxes/lowpolynight/dn.jpg");
 	faces.push_back("skyboxes/lowpolynight/bk.jpg");
 	faces.push_back("skyboxes/lowpolynight/ft.jpg");
+	faces.push_back("skyboxes/lowpolynight/up.jpg");
+	faces.push_back("skyboxes/lowpolynight/dn.jpg");
+	faces.push_back("skyboxes/lowpolynight/rt.jpg");
+	faces.push_back("skyboxes/lowpolynight/lf.jpg");
 	cubemapTexture = loadCubemap(faces);
+
+	vector<const GLchar*> faces_real;
+	faces_real.push_back("skyboxes/night/ft.jpg");
+	faces_real.push_back("skyboxes/night/bk.jpg");
+	faces_real.push_back("skyboxes/night/up.jpg");
+	faces_real.push_back("skyboxes/night/dn.jpg");
+	faces_real.push_back("skyboxes/night/rt.jpg");
+	faces_real.push_back("skyboxes/night/lf.jpg");
+	cubemapTexture_real = loadCubemap(faces_real);
 
 	ResourceManager::LoadShader("shaders/skybox.vs", "shaders/skybox.frag", nullptr, "skyboxShader");
 	skyboxShader = ResourceManager::GetShader("skyboxShader");
@@ -83,7 +93,7 @@ void Environment::Update() {
 
 }
 
-void Environment::Draw(Shader &shader, Camera &camera) {
+void Environment::Draw(Shader &shader, Camera &camera, bool real) {
 
 	// 绘制单独的萤火虫的光照
 	shader.Use();
@@ -93,12 +103,12 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetFloat("lightProperty.linear", 0.9);
 	shader.SetFloat("lightProperty.quadratic", 0.68);
 	shader.SetVector3f("lightProperty.ambient", 0.000002f, 0.000002f, 0.000002f); // 调参项： 一只萤火虫的光能对环境光有多大影响？
-	//shader.SetVector3f("globalAmbient", 0.06f, 0.06f, 0.06f); // 调参项：全局环境光，营造气氛
+																				  //shader.SetVector3f("globalAmbient", 0.06f, 0.06f, 0.06f); // 调参项：全局环境光，营造气氛
 	shader.SetVector3f("globalAmbient", 0.14f, 0.14f, 0.14f); // 调参项：全局环境光，营造气氛
 	shader.SetVector3f("lightProperty.diffuse", 219.0 / 255, 1.0f, 47.0 / 255);
 	shader.SetVector3f("lightProperty.specular", 130.0 / 255, 1.0f, 47.0 / 255);
 	shader.SetFloat("exposure", 0.3);
-	
+
 
 	int j = 0, nCenter = 0; // nCenter means how many individials is close enough to the attraction
 	for (Particle particle : particleSys->particles) {
@@ -123,9 +133,9 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetFloat("centerLightProperty.constant", 3.5f);
 	shader.SetFloat("centerLightProperty.linear", 1.0f);
 	shader.SetFloat("centerLightProperty.quadratic", 0.78);
-	shader.SetVector3f("centerLightProperty.ambient", 0.000002f * nCenter, 0.000002f* nCenter, 0.000002f* nCenter); 
-	shader.SetVector3f("centerLightProperty.diffuse", 219.0 / 255 * nCenter/1.5, 1.0f* nCenter/1.5, 47.0 / 255 * nCenter/1.5);
-	shader.SetVector3f("centerLightProperty.specular", 130.0 / 255 * nCenter/2, 1.0f* nCenter/2, 47.0 / 255 * nCenter/2);
+	shader.SetVector3f("centerLightProperty.ambient", 0.000002f * nCenter, 0.000002f* nCenter, 0.000002f* nCenter);
+	shader.SetVector3f("centerLightProperty.diffuse", 219.0 / 255 * nCenter / 1.5, 1.0f* nCenter / 1.5, 47.0 / 255 * nCenter / 1.5);
+	shader.SetVector3f("centerLightProperty.specular", 130.0 / 255 * nCenter / 2, 1.0f* nCenter / 2, 47.0 / 255 * nCenter / 2);
 
 	glm::mat4 view(1.0f);
 	glm::mat4 projection = glm::perspective(camera.Zoom, (float)Width / (float)Height, 0.1f, 100.0f);
@@ -134,7 +144,7 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	shader.SetMatrix4("projection", projection);
 
 	glm::mat4 model(1.0f);
-	model = glm::translate(model, terrainPos); 
+	model = glm::translate(model, terrainPos);
 	model = glm::scale(model, terrainScale);
 	shader.SetMatrix4("model", model);
 
@@ -151,7 +161,12 @@ void Environment::Draw(Shader &shader, Camera &camera) {
 	glBindVertexArray(skyboxVAO);
 	glActiveTexture(GL_TEXTURE0);
 	skyboxShader.SetInteger("skybox", 0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	if (!real) { // different mode, different skyboxes
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture_real);
+	}
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS);

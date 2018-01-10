@@ -119,12 +119,8 @@ void Game::Init()
 
 	/************************************************* Initializing the realistic scene ***********************************************************/
 	environment_real.Init(Width, Height, particleSys, "models/island_with_texture/Small Tropical Island.obj");
-	//environment_real.Init(Width, Height, particleSys, "models/ball.fbx");
 	environment_real.terrainPos = glm::vec3(0.0f, -40.0f, -5.0f);
-	//environment_real.terrainPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	environment_real.terrainScale = glm::vec3(0.4f, 0.4f, 0.4f);
-	//environment_real.terrainScale = glm::vec3(4.0f, 4.0f, 4.0f);
-
 
 	/************************************************ End initializing the realistic scene ********************************************************/
 
@@ -132,18 +128,19 @@ void Game::Init()
 
 void Game::Update(GLfloat dt)
 {
+	if (this->State == GAME_ACTIVE) {
+		if (this->finishing) {
+			particleSys->DieUpdate(dt);
+			return;
+		}
+		if (this->hasConstrain) {
+			particleSys->Update(dt, 0.01, camera.Position);
+		}
+		else {
+			particleSys->RandUpdate(dt, 0.01);
+		}
 
-	if (this->finishing) {
-		particleSys->DieUpdate(dt);
-		return;
 	}
-	if (this->hasConstrain) {
-		particleSys->Update(dt, 0.01, camera.Position);
-	}
-	else {
-		particleSys->RandUpdate(dt, 0.01);
-	}
-	
 		
 }
 
@@ -168,6 +165,12 @@ void Game::ProcessInput(GLfloat dt)
 	if (this->Keys[GLFW_KEY_C]) {
 		this->particleSys->ResetSystem();
 	}
+	if (this->Keys[GLFW_KEY_P]) {
+		this->State = GAME_MENU;
+	}
+	if (this->Keys[GLFW_KEY_O]) {
+		this->State = GAME_ACTIVE;
+	}
 }
 
 void Game::Render()
@@ -180,7 +183,7 @@ void Game::Render()
 
 		// Draw the environment
 		Shader tmp2 = ResourceManager::GetShader("environmentShader");
-		environment.Draw(tmp2, camera);
+		environment.Draw(tmp2, camera, false);
 
 		// Draw the particle system
 		particleSys->Draw(camera);
@@ -225,7 +228,7 @@ void Game::Render()
 
 		   // Draw the environment
 		Shader tmp6 = ResourceManager::GetShader("environmentShader_real");
-		environment_real.Draw(tmp6, camera);
+		environment_real.Draw(tmp6, camera, true);
 
 		// Draw the particle system
 		particleSys->Draw(camera);

@@ -214,7 +214,7 @@ void ParticleGenerator::RandUpdate(GLfloat dt, GLfloat newParticles)
 
 			// if need, change the accelerate
 			p.VelocityChangeCounter++;
-			if (p.VelocityChangeCounter > 100) {
+			if (p.VelocityChangeCounter > 10000000) {
 				float randX = (rand() % 100 - 50) / 5.0f;
 				float randY = (rand() % 100 - 50) / 5.0f;
 				float randZ = (rand() % 100 - 50) / 5.0f;
@@ -422,7 +422,7 @@ void ParticleGenerator::Draw(Camera &camera) {
 						theta = PI + raw_theta;
 					}
 				}
-				bugmodel = glm::rotate(bugmodel, (float)PI/2, glm::vec3(0.0f, 1.0f, 0.0f));// 矫正模型偏差
+				//bugmodel = glm::rotate(bugmodel, (float)PI/2, glm::vec3(0.0f, 1.0f, 0.0f)); // 矫正模型偏差
 				bugmodel = glm::rotate(bugmodel, theta, glm::vec3(0.0f, 1.0f, 0.0f));
 				bugmodel = glm::translate(bugmodel, glm::vec3(0.0, 0.0, 0.10)); // 矫正模型偏差
 				

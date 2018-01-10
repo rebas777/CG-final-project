@@ -145,7 +145,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	MyGame.camera.ProcessMouseScroll(yoffset);
+	//MyGame.camera.ProcessMouseScroll(yoffset);
 }
 
 void do_movement()
