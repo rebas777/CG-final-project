@@ -1,4 +1,20 @@
-# CG-final-project
-Implementing an interactive particle system with OpenGL 
-Details and reflection click [Here](https://www.jianshu.com/p/f633ae9904c7)
+
+# Firefly
+- Implementing an interactive particle system with **OpenGL** and **C++**.
+- The particle system simulate a swarm of fireflies **attracted by a point light**, while every individual of them is doing some kind of **random motion**.
+- Using modern Core-Profile mode of OpenGL.
+
+## Details 
+- The player will control a flying camera in a 3D simple scene(mainly composed of a skybox and a mountain-like mesh), and all the fireflies will be attracted by the point where the camera is located.
+- Two scenes are provided, one low poly and another realistic.
+- At most 400 fireflies are supported and each of them can emit 200 second-level particles.
+- Every single firefly act as a light source, which will illuminate the mountain-like mesh. Some optimizations have been done for better performance.
+- Bloom effect is implemented to make fireflies shiny.
+
+## Screenshot & Video Record
+
+
+
+
+More details and ideas can be found [Here(zh_CN)](https://www.jianshu.com/p/f633ae9904c7)
 
