@@ -12,9 +12,11 @@
 - Bloom effect is implemented to make fireflies shiny.
 
 ## Screenshot & Video Record
+![Screenshot1](https://raw.githubusercontent.com/wiki/rebas777/CG-final-project/Screenshot1.jpg)
+![Screenshot2](https://raw.githubusercontent.com/wiki/rebas777/CG-final-project/Screenshot2.jpg)
+![Screenshot3](https://raw.githubusercontent.com/wiki/rebas777/CG-final-project/Screenshot3.jpg)
 
-
-
+- Video record can be found at [release](https://github.com/rebas777/CG-final-project/releases)
 
 More details and ideas can be found [Here(zh_CN)](https://www.jianshu.com/p/f633ae9904c7)
 
