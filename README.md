@@ -3,6 +3,7 @@
 - Implementing an interactive particle system with **OpenGL** and **C++**.
 - The particle system simulate a swarm of fireflies **attracted by a point light**, while every individual of them is doing some kind of **random motion**.
 - Using modern Core-Profile mode of OpenGL.
+- Online Video Demo can be find at: [YouTube Link](https://youtu.be/5jFhPgfzuoM)
 
 ## Details 
 - The player will control a flying camera in a 3D simple scene(mainly composed of a skybox and a mountain-like mesh), and all the fireflies will be attracted by the point where the camera is located.
